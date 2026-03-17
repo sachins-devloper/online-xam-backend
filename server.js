@@ -12,7 +12,23 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // Init Middleware
-app.use(cors({ origin: true, credentials: true })); // Allow all origins for local network testing
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+  ? process.env.ALLOWED_ORIGIN.split(",").map((o) => o.trim())
+  : ["http://localhost:5173"];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS policy: origin ${origin} not allowed`));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
