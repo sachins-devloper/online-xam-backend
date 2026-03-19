@@ -11,28 +11,30 @@ const seedAdmin = async () => {
         console.log('MongoDB Connected...');
 
         // Check if admin already exists
-        let existingAdmin = await Admin.findOne({ username: 'admin' });
+        let existingAdmin = await Admin.findOne({ username: process.env.ADMIN_USERNAME || 'admin' });
         if (existingAdmin) {
-            console.log('Admin account already exists! Username: admin');
+            console.log(`Admin account already exists! Username: ${process.env.ADMIN_USERNAME || 'admin'}`);
             process.exit(0);
         }
 
         // Create new admin
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash('admin123', salt);
+        const password = process.env.ADMIN_PASSWORD || 'admin123';
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         const newAdmin = new Admin({
-            username: 'admin',
+            username: process.env.ADMIN_USERNAME || 'admin',
             password: hashedPassword,
             name: 'Super Admin',
-            email: 'admin@examportal.com'
+            email: process.env.ADMIN_EMAIL || 'admin@examportal.com',
+            role: 'super-admin'
         });
 
         await newAdmin.save();
         console.log('--------------------------------------------------');
         console.log('✅ Admin account seeded successfully!');
-        console.log('Username: admin');
-        console.log('Password: admin123');
+        console.log(`Username: ${process.env.ADMIN_USERNAME || 'admin'}`);
+        console.log(`Password: ${password}`);
         console.log('--------------------------------------------------');
         
         process.exit(0);
